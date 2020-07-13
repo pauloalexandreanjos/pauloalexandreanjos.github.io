@@ -1,0 +1,196 @@
+<html>
+<head>
+<title>SNAKE</title>
+<style>
+	* {
+		margin: 0px;
+		padding: 0px;
+		border: 0px;
+	}
+	body {
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	#draw {
+		border: 1px solid black;
+		width: 500;
+		height: 500;
+	}
+</style>
+</head>
+<body>
+<canvas id="draw">
+</canvas>
+<script>
+	var draw = document.getElementById('draw');
+	var ctx = draw.getContext('2d');
+	var snake = [
+		{ x: 10, y: 10},
+		{ x: 11, y: 10},
+		{ x: 12, y: 10},
+		{ x: 13, y: 10},
+		{ x: 14, y: 10},
+		{ x: 15, y: 10},
+	];
+	
+	var apple = { x: 1, y: 1 };
+	
+	const DIR = 'DIR';
+	const ESQ = 'ESQ';
+	const CIM = 'CIM';
+	const BAI = 'BAI';
+	
+	var objKeys = {
+		'ArrowRight' : DIR,
+		'ArrowLeft' : ESQ,
+		'ArrowUp' : CIM,
+		'ArrowDown' : BAI
+	}
+	
+	var direction = DIR;
+	
+	var pieceSize = 10;
+	
+	function getRandomInt(min, max) {
+		min = Math.ceil(min);
+		max = Math.floor(max);
+		return Math.floor(Math.random() * (max - min)) + min;
+	}
+	
+	function createApple() {
+		apple.x = getRandomInt(1, 27);
+		apple.y = getRandomInt(1, 25);
+	}
+	
+	function clear(ctx) {
+		ctx.fillStyle = "black";
+		ctx.fillRect (0, 0, 500, 200);
+	}
+	
+	function drawPiece(posX, posY, color) {
+		ctx.fillStyle = color || "rgb(0, 255, 0)";
+		ctx.fillRect((posX-1) * (pieceSize + 1), (posY-1) * ((pieceSize/2) + 1), pieceSize, (pieceSize/2));
+	}
+	
+	function printGame() {
+		for (part in snake ){
+			if (part == snake.length -1) {
+				drawPiece(snake[part].x, snake[part].y, 'rgb(255, 0, 0)');
+				continue;
+			}
+			
+			drawPiece(snake[part].x, snake[part].y);
+		}
+		
+		drawPiece(apple.x, apple.y, 'rgb(0, 0, 255)');
+	}
+	
+	function checkLimin(obj) {
+		if (obj.x > 27) obj.x = 1;
+		if (obj.y > 25) obj.y = 1;
+		if (obj.x < 1) obj.x = 27;
+		if (obj.y < 1) obj.y = 25;
+		
+		return obj;
+	}
+	
+	function pos0Snake() {
+		return snake[snake.length-1];
+	}
+	
+	function attSnake() {
+		
+		pos0 = pos0Snake();
+				
+		var obj = { ... pos0 };
+		
+		switch(direction) {
+			case DIR:
+				obj.x = obj.x + 1;
+				break;
+				
+			case ESQ:
+				obj.x = obj.x - 1;
+				break;
+				
+			case BAI:
+				obj.y = obj.y + 1;
+				break;
+				
+			case CIM:
+				obj.y = obj.y - 1;
+				break;
+				
+			default:
+				break;
+		}
+		
+		snake.shift();
+		snake.push(checkLimin(obj));
+	}
+	
+	function checkCollisionApple() {
+		pos = pos0Snake();
+		
+		if (pos.x == apple.x && pos.y == apple.y) {
+			
+			snake.push({ ... apple });
+			
+			createApple();
+		}
+	}
+	
+	function checkCollisionBody() {
+		pos = pos0Snake();
+		
+		let partCollision = snake.filter(function(part) { return part.x == pos.x && part.y == pos.y });
+		
+		return partCollision.length > 1;
+	}
+	function gameLoop() {
+		
+		clear(ctx);
+		
+		printGame();
+		
+		checkCollisionApple();
+		
+		attSnake();
+		
+		if (checkCollisionBody()) {
+			
+			ctx.fillStyle = "red";
+			
+			ctx.fillText('GAME OVER', 120, 70);
+			
+			return;
+		}
+		
+		setTimeout(gameLoop, 100);
+	}
+	
+	clear(ctx);
+	
+	createApple();
+	
+	setTimeout(gameLoop, 100);
+	
+	window.addEventListener('keydown', function(evt) {
+		
+		if (!(evt.key in objKeys)) return;
+		
+		let newDir = objKeys[evt.key]; 
+		
+		if (direction == DIR && newDir == ESQ) return;
+		if (direction == ESQ && newDir == DIR) return;
+		if (direction == CIM && newDir == BAI) return;
+		if (direction == BAI && newDir == CIM) return;
+		
+		direction = newDir;
+	});
+	
+</script>
+</body>
+</html>
