@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <title>
+            Ghost Speed Calculator
+        </title>
+        <style>
+            .panel {
+                margin: auto;
+                top: 100px;
+                border: 1px solid black;
+                height: 500px;
+            }
+        </style>
+        <script>
+            function start() {
+                console.log("Started!")
+
+                var counter = 0;
+                var lastClick = null;
+                var meanTimeArr = [];
+
+                document.querySelector(".panel")
+                    .addEventListener("click", (evt) => {
+                        counter += 1;
+
+                        let currentClick = Date.now();
+                        let metersPerSecond = 0;
+
+                        if (lastClick != null) {
+                            metersPerSecond = 1 / ((currentClick - lastClick) / 1000);
+                            const mpsFormatted = metersPerSecond.toFixed(2);
+                            console.log(`Counter [${counter}]: ${mpsFormatted}`);
+                            
+
+                            if (counter == 10) {
+                                let meanTime = meanTimeArr.reduce((tot, act) => tot + act, 0) / 10;
+
+                                console.log(`Mean time: ${meanTime}`);
+                                counter = 0;
+                                meanTimeArr = [];
+                            }
+                        }
+
+                        lastClick = currentClick;
+                        meanTimeArr.push(metersPerSecond);
+                    })
+            }
+        </script>
+    </head>
+    <body onload="start()">
+        <div></div>
+        <div class="panel"></div>
+    </body>
+</html>
