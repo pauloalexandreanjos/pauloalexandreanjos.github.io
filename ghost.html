@@ -4,14 +4,22 @@
             Ghost Speed Calculator
         </title>
         <style>
+            body {
+                margin: 0 0 0 0;
+            }
             .panel {
+                padding: 0 0 0 0;
                 margin: auto;
+                width: 100vw;
                 top: 100px;
                 border: 1px solid black;
                 height: 500px;
+                touch-action: manipulation;
             }
             .info {
-
+                font-family: arial;
+                margin: auto;
+                width: 10vw;
             }
         </style>
         <script>
@@ -53,8 +61,8 @@
         </script>
     </head>
     <body onload="start()">
-        <div class="info">
-            Mean Ghost Speed: <span id="speed">0</span>
+        <div>
+            <div class="info">Mean Ghost Speed: <span id="speed">0</span></div>
         </div>
         <div class="panel"></div>
     </body>
