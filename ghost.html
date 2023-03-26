@@ -10,6 +10,9 @@
                 border: 1px solid black;
                 height: 500px;
             }
+            .info {
+
+            }
         </style>
         <script>
             function start() {
@@ -18,6 +21,7 @@
                 var counter = 0;
                 var lastClick = null;
                 var meanTimeArr = [];
+                var speedElm = document.querySelector("#speed");
 
                 document.querySelector(".panel")
                     .addEventListener("click", (evt) => {
@@ -36,6 +40,7 @@
                                 let meanTime = meanTimeArr.reduce((tot, act) => tot + act, 0) / 10;
 
                                 console.log(`Mean time: ${meanTime}`);
+                                speedElm.innerHTML = meanTime.toFixed(2);
                                 counter = 0;
                                 meanTimeArr = [];
                             }
@@ -48,7 +53,9 @@
         </script>
     </head>
     <body onload="start()">
-        <div></div>
+        <div class="info">
+            Mean Ghost Speed: <span id="speed">0</span>
+        </div>
         <div class="panel"></div>
     </body>
 </html>
