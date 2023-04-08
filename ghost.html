@@ -10,7 +10,7 @@
             .panel {
                 padding: 0 0 0 0;
                 margin: auto;
-                width: 100vw;
+                width: calc(100vw - 2px);
                 top: 100px;
                 border: 1px solid black;
                 height: 500px;
@@ -19,17 +19,75 @@
             .info {
                 font-family: arial;
                 margin: auto;
-                width: 10vw;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+            .info-item {
+                width: 300px;
+            }
+            .modal {
+                display: none;
+                position: absolute;
+                top: 0;
+                left: 0;
+                z-index: 2;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(255, 255, 255, 0.8);
+                align-items: center;
+                justify-content: center;
+            }
+            .modal-content {
+                width: 90%;
+                height: 90%;
+                background-color: white;
+                border: 1px solid black;
+                border-radius: 5px;
             }
         </style>
         <script>
+            const ghostStepFactor = 0.90;
+            const errorMargin = 0.05;
+            const speeds = [
+                { speed: 1.7, type: "Normal" },
+                { speed: 1, type: "Ravenant WO LOS" },
+                { speed: 3, type: "Ravenant LOS" },
+                { speed: 1, type: "Thaye Old" },
+                { speed: 2.75, type: "Thaye Young" },
+                { speed: 0.4, type: "Deogen Close" },
+                { speed: 3, type: "Deogen Far" },
+                { speed: 1.5, type: "Slow Twin" },
+                { speed: 1.9, type: "Fast Twin" },
+                { speed: 2.25, type: "Moroi 0% Sanity WO LOS" },
+                { speed: 1.5, type: "Moroi +45% Sanity" },
+                { speed: 2.5, type: "Jinn 3m from Player Breaker ON" },
+                { speed: 2.5, type: "Raiju Near Eletronic Device" },
+                { speed: 1.4, type: "Hantu >= 15 C " },
+                { speed: 2.7, type: "Hantu =< 0 C" },
+            ];
+
+            function getDescription(value, baseSpeed) {
+                const filtered = speeds.filter(opt => value >= ((opt.speed * baseSpeed) - errorMargin) && value <= ((opt.speed * baseSpeed) + errorMargin));
+                const text = filtered.reduce((ret, curr) => `${ret} ${ret == '' ? curr.type : 'or '+curr.type}`, "");
+
+                return `${value} => ${text}`;
+            }
+
             function start() {
                 console.log("Started!")
 
                 var counter = 0;
                 var lastClick = null;
                 var meanTimeArr = [];
-                var speedElm = document.querySelector("#speed");
+                var samplesQtd = 5;
+                var baseSpeed = 1;
+
+                const speedElm = document.querySelector("#speed");
+                const samplesQtdElm = document.querySelector("#samplesQtd");
+                const baseSpeedElm = document.querySelector("#baseSpeed");
+                const btnModal = document.querySelector("#btnModal");
+                const modal = document.querySelector(".modal");
 
                 document.querySelector(".panel")
                     .addEventListener("click", (evt) => {
@@ -39,16 +97,16 @@
                         let metersPerSecond = 0;
 
                         if (lastClick != null) {
-                            metersPerSecond = 1 / ((currentClick - lastClick) / 1000);
+                            metersPerSecond = (1 / ((currentClick - lastClick) / 1000)) * ghostStepFactor;
                             const mpsFormatted = metersPerSecond.toFixed(2);
                             console.log(`Counter [${counter}]: ${mpsFormatted}`);
                             
 
-                            if (counter == 10) {
-                                let meanTime = meanTimeArr.reduce((tot, act) => tot + act, 0) / 10;
+                            if (counter == samplesQtd) {
+                                let meanTime = meanTimeArr.reduce((tot, act) => tot + act, 0) / samplesQtd;
 
                                 console.log(`Mean time: ${meanTime}`);
-                                speedElm.innerHTML = meanTime.toFixed(2);
+                                speedElm.innerHTML = getDescription(meanTime.toFixed(2), baseSpeed);
                                 counter = 0;
                                 meanTimeArr = [];
                             }
@@ -57,13 +115,60 @@
                         lastClick = currentClick;
                         meanTimeArr.push(metersPerSecond);
                     })
+
+                samplesQtdElm.addEventListener("change", (evt) => {
+                    samplesQtd = samplesQtdElm.value;
+                    counter = 0;
+                    meanTimeArr = [];
+                    console.log(`Changing Samples Quantity to ${samplesQtd}`)
+                })
+
+                baseSpeedElm.addEventListener("change", (evt) => {
+                    baseSpeed = baseSpeedElm.value;
+                    counter = 0;
+                    meanTimeArr = [];
+                    console.log(`Changing Base Speed to ${baseSpeed}`)
+                })
+
+                btnModal.addEventListener("click", (evt) => {
+                    modal.style.display = 'flex';
+                })
+
+                modal.addEventListener("click", (evt) => {
+                    modal.style.display = 'none';
+                })
             }
         </script>
     </head>
     <body onload="start()">
         <div>
-            <div class="info">Mean Ghost Speed: <span id="speed">0</span></div>
+            <div class="info">
+                <div class="info-item">
+                    Mean Values to Use:
+                    <select id="samplesQtd" required>
+                        <option value="3">3</option>
+                        <option value="5" selected>5</option>
+                        <option value="7">7</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+                <div class="info-item" style="background-color:#e6e6e6;">
+                    Mean Ghost Speed: <span id="speed">0</span>
+                </div>
+                <div class="info-item">
+                    Ghost Base Speed
+                    <select id="baseSpeed" required>
+                        <option value="0.5">50</option>
+                        <option value="0.75">75</option>
+                        <option value="1" selected>100</option>
+                        <option value="1.5">150</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <div class="panel"></div>
+        <div class="modal">
+            <div class="modal-content"></div>
+        </div>
     </body>
 </html>
